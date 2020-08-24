@@ -24,19 +24,20 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class ReceiverAdapter extends RecyclerView.Adapter<ReceiverAdapter.ViewHolder> {
-    private LayoutInflater inflater;
     private List<Receiver> receivers;
-    private Context ctx;
+    private View.OnClickListener listener;
 
-    public ReceiverAdapter(Context ctx, List<Receiver> receivers) {
-        inflater = LayoutInflater.from(ctx);
+    public ReceiverAdapter(List<Receiver> receivers ) {
         this.receivers = receivers;
-        this.ctx = ctx;
+    }
+
+    public void setOnClickListener(View.OnClickListener listener) {
+        this.listener = listener;
     }
 
     @Override
     public ReceiverAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = inflater.inflate(R.layout.receiver_layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.receiver_layout, parent, false);
         return new ReceiverAdapter.ViewHolder(view);
     }
 
@@ -44,35 +45,6 @@ public class ReceiverAdapter extends RecyclerView.Adapter<ReceiverAdapter.ViewHo
     public void onBindViewHolder(ReceiverAdapter.ViewHolder vh, final int position) {
         vh.name.setText(receivers.get(position).getName());
         vh.address.setText(receivers.get(position).getAddress());
-        vh.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final Receiver r = receivers.get(position);
-
-                new AsyncTask<String, Void, Long>() {
-
-                    @Override
-                    protected Long doInBackground(String... strings) {
-                        OkHttpClient client = new OkHttpClient();
-
-                        StringBuilder json = new StringBuilder();
-                        json.append("{\"type\":\"URL\",\"value\":\"").append("https://heise.de").append("\"}");
-                        RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
-                        Request req = new Request.Builder()
-                                .url(r.getAddress() + "/open")
-                                .post(body)
-                                .build();
-                        try (Response response = client.newCall(req).execute()) {
-                            Log.i("ReceiverAdapter", response.body().string());
-                        } catch (IOException e) {
-                            Log.e("ReceiverAdapter", e.getMessage());
-                        }
-                        return 0L;
-                    }
-                }.execute();
-                Toast.makeText(ctx, receivers.get(position).getName(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override
@@ -86,6 +58,9 @@ public class ReceiverAdapter extends RecyclerView.Adapter<ReceiverAdapter.ViewHo
 
         public ViewHolder(View itemView) {
             super(itemView);
+            itemView.setTag(this);
+            itemView.setOnClickListener(listener);
+
             name = itemView.findViewById(R.id.name);
             address = itemView.findViewById(R.id.address);
         }

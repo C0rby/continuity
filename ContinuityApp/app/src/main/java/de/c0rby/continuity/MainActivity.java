@@ -1,6 +1,7 @@
 package de.c0rby.continuity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.c0rby.continuity.model.Receiver;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private NsdHelper nsdHelper;
@@ -28,13 +34,51 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     List<Receiver> receivers;
     private ReceiverAdapter receiverAdapter;
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) view.getTag();
+            int pos = vh.getAdapterPosition();
+
+            final Receiver r = receivers.get(pos);
+            new AsyncTask<String, Void, Long>() {
+
+                @Override
+                protected Long doInBackground(String... strings) {
+                    OkHttpClient client = new OkHttpClient();
+
+                    final Intent intent = getIntent();
+                    if (intent == null) {
+                        return 0L;
+                    }
+                    final String url = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+                    StringBuilder json = new StringBuilder();
+                    json.append("{\"type\":\"URL\",\"value\":\"").append(url).append("\"}");
+                    RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+                    Request req = new Request.Builder()
+                            .url(r.getAddress() + "/open")
+                            .post(body)
+                            .build();
+                    try (Response response = client.newCall(req).execute()) {
+                        Log.i("ReceiverAdapter", response.body().string());
+                    } catch (IOException e) {
+                        Log.e("ReceiverAdapter", e.getMessage());
+                    }
+                    return 0L;
+                }
+            }.execute();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.recyclerView);
-        this.getSupportActionBar().hide();
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
         createReceivers();
     }
 
@@ -85,7 +129,12 @@ public class MainActivity extends AppCompatActivity {
         receivers.add(new Receiver("Laptop", "http://192.168.178.157:8080"));
         receivers.add(new Receiver("Mein Wohnzimmer", "http://192.168.178.12:8080"));
         receivers.add(new Receiver("Mein Schlafzimmer", "http://192.168.178.23:8080"));
-        receiverAdapter = new ReceiverAdapter(getBaseContext(), receivers);
+        receivers.add(new Receiver("Evas Wohnzimmer", "http://192.168.0.33:8080"));
+
+
+
+        receiverAdapter = new ReceiverAdapter(receivers);
+        receiverAdapter.setOnClickListener(onClickListener);
         recyclerView.setAdapter(receiverAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getBaseContext(),LinearLayoutManager.VERTICAL, false));
         recyclerView.setNestedScrollingEnabled(false);
