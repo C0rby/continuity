@@ -35,6 +35,10 @@ public class ReceiverAdapter extends RecyclerView.Adapter<ReceiverAdapter.ViewHo
         this.listener = listener;
     }
 
+    public void addReceiver(Receiver r) {
+        this.receivers.add(r);
+    }
+
     @Override
     public ReceiverAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.receiver_layout, parent, false);

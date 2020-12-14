@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.net.nsd.NsdServiceInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -71,6 +72,18 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private DiscoveryListener listener = new DiscoveryListener() {
+        @Override
+        public void onServiceDiscovered(NsdServiceInfo info) {
+            Receiver r = new Receiver(info.getServiceName(), "http://" + info.getHost().getHostAddress() + ":" + info.getPort());
+            receiverAdapter.addReceiver(r);
+            runOnUiThread(() -> {
+                receiverAdapter.notifyDataSetChanged();
+              }
+            );
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        nsdHelper = new NsdHelper(this);
+        nsdHelper = new NsdHelper(this, listener);
         nsdHelper.discoverServices();
         super.onStart();
     }
@@ -123,13 +136,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void createReceivers() {
-        receivers = new ArrayList<>(4);
+        receivers = new ArrayList<>(0);
+        /*
         receivers.add(new Receiver("Evas Wohnzimmer", "http://192.168.0.33:8080"));
         receivers.add(new Receiver("Yocto", "http://192.168.178.184:8080"));
         receivers.add(new Receiver("Laptop", "http://192.168.178.157:8080"));
         receivers.add(new Receiver("Mein Wohnzimmer", "http://192.168.178.12:8080"));
         receivers.add(new Receiver("Mein Schlafzimmer", "http://192.168.178.23:8080"));
         receivers.add(new Receiver("Evas Wohnzimmer", "http://192.168.0.33:8080"));
+         */
 
 
 
