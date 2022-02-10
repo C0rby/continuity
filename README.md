@@ -1,6 +1,9 @@
 # continuity
 Seamlessly share links from your smartphone to your computers  
 
+**NOT MAINTAINED**  
+[KDEConnect](https://kdeconnect.kde.org/) does everything I intended to develop in continuity so this development is stopped.
+
 ## Background
 I often find myself browsing hackernews or some other sites on my phone, I'm starting to read an article or watch a video and think that it would be more comfortable to continue on my computer with a bigger screen. Sure I can send the link to myself via one of the available messengers or via mail but I think there should be a more seamless solution like just share the url with an app and the app will send a request to the computer you want to continue reading or watching on. Later on the app and the service could maybe do more like implement one of the existing cast protocols.
 
